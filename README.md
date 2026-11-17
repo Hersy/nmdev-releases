@@ -310,7 +310,7 @@ Per-stage overrides. Stages: `message`, `assess`, `resolve`, `task_brief`, `task
 |---|---|---|
 | `tracker.site` | — | e.g. `https://tracker.example.com` |
 | `tracker.cloud_id` | — | Jira cloud ID |
-| `tracker.epic_key` | — | project key of epics (`NMDEV_EPIC_KEY` overrides) |
+| `tracker.epic_key` | — | project key of epics (`NMDEV_EPIC_KEY` overrides); `*` takes any key and lets `pap`, `pr`, `align` and `task --epic` run from and onto any non-base branch |
 | `tracker.project_keys` | — | project keys tickets come from |
 | `tracker.started` | — | status set when `task` starts |
 | `tracker.review` | — | status set when the PR is posted |

@@ -317,7 +317,7 @@ Overrides por etapa. Etapas: `message`, `assess`, `resolve`, `task_brief`, `task
 |---|---|---|
 | `tracker.site` | — | ej. `https://tracker.example.com` |
 | `tracker.cloud_id` | — | cloud ID de Jira |
-| `tracker.epic_key` | — | clave de proyecto de los epics (`NMDEV_EPIC_KEY` la pisa) |
+| `tracker.epic_key` | — | clave de proyecto de los epics (`NMDEV_EPIC_KEY` la pisa); `*` acepta cualquier clave y deja correr `pap`, `pr`, `align` y `task --epic` desde y hacia cualquier rama que no sea base |
 | `tracker.project_keys` | — | claves de proyecto de donde vienen los tickets |
 | `tracker.started` | — | estado que pone `task` al arrancar |
 | `tracker.review` | — | estado que se pone al publicar el PR |
