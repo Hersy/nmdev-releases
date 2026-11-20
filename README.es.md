@@ -317,13 +317,13 @@ Overrides por etapa. Etapas: `message`, `assess`, `resolve`, `task_brief`, `task
 |---|---|---|
 | `tracker.site` | — | ej. `https://tracker.example.com` |
 | `tracker.cloud_id` | — | cloud ID de Jira |
-| `tracker.epic_key` | — | clave de proyecto de los epics (`NMDEV_EPIC_KEY` la pisa); `*` acepta cualquier clave y deja correr `pap`, `pr`, `align` y `task --epic` desde y hacia cualquier rama que no sea base |
+| `tracker.epic_key` | — | clave de proyecto de los epics (`NMDEV_EPIC_KEY` la pisa); `*` acepta cualquier clave y deja correr `pap`, `pr`, `align` y `task --epic` desde y hacia cualquier rama que no sea base; `task` sin rama del epic padre sale de la rama actual, pusheada y no base |
 | `tracker.project_keys` | — | claves de proyecto de donde vienen los tickets |
 | `tracker.started` | — | estado que pone `task` al arrancar |
 | `tracker.review` | — | estado que se pone al publicar el PR |
 | `tracker.order` | — | estados del workflow en orden |
 | `tracker.task_types` | — | tipo de issue → prefijo de rama, ej. `{ Bug = "fix/", Task = "feat/" }` |
-| `tracker.task_tags` | — | tag de plataforma del ticket → slug del repo, ej. `{ IOS = "app-ios" }` |
+| `tracker.task_tags` | — | tag de plataforma del ticket → slug del repo, ej. `{ IOS = "app-ios" }`; una entrada `"*"` (cualquier repo) manda los tickets sin tag que coincida a ese repo, o al actual si está vacía, y levanta los chequeos de tipo, estado final y tags rechazados (`NMDEV_ANY_REPO=1` equivale a `"*" = ""`) |
 | `tracker.refused_tags` | `[]` | tags que `task` rechaza (plataforma de otro equipo) |
 
 ### `[distributor]` (Firebase App Distribution)
@@ -381,6 +381,7 @@ Overrides por etapa. Etapas: `message`, `assess`, `resolve`, `task_brief`, `task
 | `NMDEV_LANG` | `en` o `es`; pisa `language` |
 | `NMDEV_AGENT_BACKEND` / `NMDEV_AGENT_MODEL` / `NMDEV_AGENT_EFFORT` | pisan backend, modelo y effort en todas las etapas |
 | `NMDEV_EPIC_KEY` | pisa `tracker.epic_key` |
+| `NMDEV_ANY_REPO` | `1` equivale a una entrada `"*" = ""` en `tracker.task_tags` si no tiene una |
 | `NMDEV_FLOW_STATE` | directorio de estado del flujo (default `~/.local/state/nmdev/flow`) |
 | `NMDEV_BUILD_LOCK=0` | desactiva el build lock; `NMDEV_BUILD_LOCK_DIR` lo mueve |
 | `NMDEV_BUILD_TIMEOUT` | timeout de build en segundos |

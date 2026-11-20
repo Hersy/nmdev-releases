@@ -310,13 +310,13 @@ Per-stage overrides. Stages: `message`, `assess`, `resolve`, `task_brief`, `task
 |---|---|---|
 | `tracker.site` | — | e.g. `https://tracker.example.com` |
 | `tracker.cloud_id` | — | Jira cloud ID |
-| `tracker.epic_key` | — | project key of epics (`NMDEV_EPIC_KEY` overrides); `*` takes any key and lets `pap`, `pr`, `align` and `task --epic` run from and onto any non-base branch |
+| `tracker.epic_key` | — | project key of epics (`NMDEV_EPIC_KEY` overrides); `*` takes any key and lets `pap`, `pr`, `align` and `task --epic` run from and onto any non-base branch; `task` with no parent epic branch branches off the current pushed non-base branch |
 | `tracker.project_keys` | — | project keys tickets come from |
 | `tracker.started` | — | status set when `task` starts |
 | `tracker.review` | — | status set when the PR is posted |
 | `tracker.order` | — | workflow statuses in order |
 | `tracker.task_types` | — | issue type → branch prefix, e.g. `{ Bug = "fix/", Task = "feat/" }` |
-| `tracker.task_tags` | — | ticket platform tag → repo slug, e.g. `{ IOS = "app-ios" }` |
+| `tracker.task_tags` | — | ticket platform tag → repo slug, e.g. `{ IOS = "app-ios" }`; a `"*"` entry (any repo) sends tickets with no matching tag to that repo, or to the current one when empty, and lifts the type, done-status and refused-tag checks (`NMDEV_ANY_REPO=1` acts as `"*" = ""`) |
 | `tracker.refused_tags` | `[]` | tags `task` refuses (another team's platform) |
 
 ### `[distributor]` (Firebase App Distribution)
@@ -374,6 +374,7 @@ Per-stage overrides. Stages: `message`, `assess`, `resolve`, `task_brief`, `task
 | `NMDEV_LANG` | `en` or `es`; overrides `language` |
 | `NMDEV_AGENT_BACKEND` / `NMDEV_AGENT_MODEL` / `NMDEV_AGENT_EFFORT` | override backend, model, effort for every stage |
 | `NMDEV_EPIC_KEY` | overrides `tracker.epic_key` |
+| `NMDEV_ANY_REPO` | `1` acts as a `"*" = ""` entry in `tracker.task_tags` when it has none |
 | `NMDEV_FLOW_STATE` | flow state dir (default `~/.local/state/nmdev/flow`) |
 | `NMDEV_BUILD_LOCK=0` | disable the build lock; `NMDEV_BUILD_LOCK_DIR` moves it |
 | `NMDEV_BUILD_TIMEOUT` | build timeout in seconds |
