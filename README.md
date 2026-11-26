@@ -158,7 +158,12 @@ into `develop`.
 ### Flow
 
 - **`nmdev task <TICKET>`** — take a Jira ticket (key or browse URL) to a posted PR1: brief,
-  implement, compile, commit, PR. `--repo` (default: from the ticket's platform tags), `--epic`,
+  implement, compile, commit, PR. With `tracker.repo` set, `<TICKET>` can also be a tracker-repo id
+  (`app-ios/074`, `_shared/012`), and a Jira key with no file there gets a stub mirror in the routed
+  repo's folder. The ticket's file gets `status: in-progress` on every run, and `pr` sets
+  `in-review`. Jira is called only while an epic is active: with none, the ticket comes from its
+  file and nothing is read, moved or assigned there. A ticket whose Jira status category is done is
+  refused. `--repo` (default: from the ticket's platform tags), `--epic`,
   `--from-file <FILE>` (ticket text instead of Jira), `--answers <FILE>` (answers to a stopped
   brief's questions), `--fresh`, `--build`, `-y`.
 - **`nmdev address`** — answer the review on this branch's PR: rebut or answer what needs no
@@ -207,10 +212,40 @@ the other app lacks, per `sync.modes`.
 - **`nmdev install`** — install the commit hooks in every configured repo and the LaunchAgent
   `dev.hersy.nmdev.sync`.
 
+### Tracker epics
+
+- **`nmdev config`** — the active epic, its keys and the brief state. **`nmdev config get <KEY>`** prints
+  one value (`epic` or an epic key). **`nmdev config set epic <SLUG>`** switches epics;
+  `--jira <KEY> [--space <KEY>]` creates the epic first, filling `jira_board` from the project's first
+  board and `home_page` from the space (a lookup that fails warns and leaves the key empty). **`nmdev config set epic none`** turns tracking off.
+  **`nmdev config set <KEY> <VALUE>`** edits one key of the active epic. Epic files live in the tracker
+  repo's `epics/<slug>.toml` (keys: `jira_project` required; `jira_board`, `confluence_space`,
+  `home_page`, `brief_page`, `lang`, `status_started`, `status_review`, `branch`), the active slug in
+  `active-epic` beside it; every change is committed there.
+- **`nmdev tickets sync [--dry-run]`** — pulls the active epic's Jira project into the tracker repo
+  through a paged JQL search. A file whose `jira` matches an issue gets only `status`, `jira_status`,
+  `assignee` and `sprint` rewritten, never its body: Jira's `status_started` maps to `in-progress`,
+  `status_review` to `in-review`, any other done-category status to `done`; any other status leaves
+  `status` alone and is written verbatim to `jira_status`, which is removed again once the status maps.
+  A field Jira leaves empty is removed. Sprint is the issue's active sprint, else its last one, read
+  from the site's sprint custom field. An issue with no file becomes a stub in the folder its summary's
+  `task_tags` tag routes to, else `_shared`. It prints each changed field and created file and never
+  commits (`--json` suggests the commit); `--dry-run` writes nothing. With no epic active it makes no
+  Jira call and says so.
+- **`nmdev brief check`** — whether the active epic's Brief page (`brief_page`) is fresh, for the
+  brief gate hook. Stale when `brief_page` is empty or the page is gone, when another page in
+  `confluence_space` was last edited after the Brief's current version, or when an issue in
+  `jira_project` was created, or had its summary or description changed (read from its changelog),
+  after it; status, assignee and sprint changes don't count. The reason names the newest trigger;
+  `--json` gives `fresh`, `reason` and `trigger` (`kind` `page` or `issue`, its id or key, `change`,
+  `at`). Exit codes: `0` fresh or no epic active, `1` stale (next: run the brief skill), `2` can't
+  check (Confluence or Jira unreachable or refusing the token; the cause is in the reason, and
+  `fresh` is null). `nmdev config` shows the same state as `fresh`, `stale` or `unknown`.
+
 ### Maintenance
 
-- **`nmdev doctor`** — check tools, backends, hooks, LaunchAgent, Keychain tokens, Firebase login,
-  build lock, pack and config. `--fix` installs the fastlane gem bundle first.
+- **`nmdev doctor`** — check tools, backends, hooks, LaunchAgent, Keychain tokens, Jira and
+  Confluence reach, Firebase login, build lock, pack and config. `--fix` installs the fastlane gem bundle first.
 - **`nmdev setup [SECTION]`** — write the config; see [Setup](#setup).
 - `nmdev --license` prints the license.
 
@@ -311,13 +346,14 @@ Per-stage overrides. Stages: `message`, `assess`, `resolve`, `task_brief`, `task
 | `tracker.site` | — | e.g. `https://tracker.example.com` |
 | `tracker.cloud_id` | — | Jira cloud ID |
 | `tracker.epic_key` | — | project key of epics (`NMDEV_EPIC_KEY` overrides); `*` takes any key and lets `pap`, `pr`, `align` and `task --epic` run from and onto any non-base branch; `task` with no parent epic branch branches off the current pushed non-base branch |
-| `tracker.project_keys` | — | project keys tickets come from |
-| `tracker.started` | — | status set when `task` starts |
-| `tracker.review` | — | status set when the PR is posted |
-| `tracker.order` | — | workflow statuses in order |
-| `tracker.task_types` | — | issue type → branch prefix, e.g. `{ Bug = "fix/", Task = "feat/" }` |
 | `tracker.task_tags` | — | ticket platform tag → repo slug, e.g. `{ IOS = "app-ios" }`; a `"*"` entry (any repo) sends tickets with no matching tag to that repo, or to the current one when empty, and lifts the type, done-status and refused-tag checks (`NMDEV_ANY_REPO=1` acts as `"*" = ""`) |
 | `tracker.refused_tags` | `[]` | tags `task` refuses (another team's platform) |
+| `tracker.repo` | unset | tracker repo: epic files and markdown tickets (`config`) |
+
+Per-board values live only in the active epic's file, `<tracker.repo>/epics/<slug>.toml`. A config
+that still sets `tracker.project_keys`, `started`, `review`, `order` or `task_types` is refused. Issue
+types go in the epic's optional `[task_types]` table (issue type → branch prefix, default
+`{ Bug = "fix/", Task = "feat/" }`).
 
 ### `[distributor]` (Firebase App Distribution)
 
@@ -404,7 +440,7 @@ Fix what fails and re-run. A config error names the file and the offending key.
 | Item (service) | Account | Holds |
 |---|---|---|
 | `dev.hersy.nmdev.bitbucket` | `forge.account` | Bitbucket token |
-| `dev.hersy.nmdev.jira` | your Jira email | Jira token |
+| `dev.hersy.nmdev.jira` | your Jira email | Jira token, also used to read Confluence (scopes `read:page:confluence`, `read:space:confluence`) |
 | `nmdev-gemini` (`backends.gemini.keychain_item`) | — | Gemini API key, only with the gemini backend |
 
 Rotate a token with `nmdev setup forge` / `nmdev setup tracker` and pick "replace". Inspect with
