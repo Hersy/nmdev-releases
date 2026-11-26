@@ -440,7 +440,8 @@ Fix what fails and re-run. A config error names the file and the offending key.
 | Item (service) | Account | Holds |
 |---|---|---|
 | `dev.hersy.nmdev.bitbucket` | `forge.account` | Bitbucket token |
-| `dev.hersy.nmdev.jira` | your Jira email | Jira token, also used to read Confluence (scopes `read:page:confluence`, `read:space:confluence`) |
+| `dev.hersy.nmdev.jira` | your Jira email | Jira token; also reads Confluence when it is unscoped |
+| `dev.hersy.nmdev.confluence` | your Jira email | Confluence token (scopes `read:page:confluence`, `read:space:confluence`), needed when the Jira token is scoped: a scoped token covers one app. `setup tracker` asks for it only when the Jira token can't read Confluence |
 | `nmdev-gemini` (`backends.gemini.keychain_item`) | — | Gemini API key, only with the gemini backend |
 
 Rotate a token with `nmdev setup forge` / `nmdev setup tracker` and pick "replace". Inspect with

@@ -448,7 +448,8 @@ Arreglá lo que falla y volvé a correrlo. Un error de config nombra el archivo 
 | Ítem (service) | Cuenta | Contiene |
 |---|---|---|
 | `dev.hersy.nmdev.bitbucket` | `forge.account` | token de Bitbucket |
-| `dev.hersy.nmdev.jira` | tu email de Jira | token de Jira, también para leer Confluence (scopes `read:page:confluence`, `read:space:confluence`) |
+| `dev.hersy.nmdev.jira` | tu email de Jira | token de Jira; también lee Confluence si no tiene scopes |
+| `dev.hersy.nmdev.confluence` | tu email de Jira | token de Confluence (scopes `read:page:confluence`, `read:space:confluence`), necesario si el token de Jira tiene scopes: un token con scopes cubre una sola app. `setup tracker` lo pide solo si el token de Jira no puede leer Confluence |
 | `nmdev-gemini` (`backends.gemini.keychain_item`) | — | API key de Gemini, solo con el backend gemini |
 
 Para rotar un token: `nmdev setup forge` / `nmdev setup tracker` y elegí "reemplazar". Para
