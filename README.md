@@ -238,6 +238,13 @@ the other app lacks, per `sync.modes`.
   `task_tags` tag routes to, else `_shared`. It prints each changed field and created file and never
   commits (`--json` suggests the commit); `--dry-run` writes nothing. With no epic active it makes no
   Jira call and says so.
+- **`nmdev wiki put <FILE> --title <TITLE>`** — write a storage-format body to the active epic's
+  `confluence_space`: the page with that exact title is updated to its next version, otherwise created
+  under `--parent` (default: the space Home). `--parent` on an existing page moves it. `--label L` and
+  `--prop KEY=JSON` repeat. **`nmdev wiki get <ID>`** prints the storage body (`--json` adds the page
+  properties), **`nmdev wiki attach <ID> <FILE>...`** uploads files (same name: new version) and prints each
+  media file id, **`nmdev wiki state <ID> <NAME> [--color HEX]`** sets the page status, which Confluence
+  records as a new version. Exit `2` on a bad `--prop` or an epic without a space.
 - **`nmdev brief check`** — whether the active epic's Brief page (`brief_page`) is fresh, for the
   brief gate hook. Stale when `brief_page` is empty or the page is gone, when another page in
   `confluence_space` was last edited after the Brief's current version, or when an issue in
@@ -251,7 +258,7 @@ the other app lacks, per `sync.modes`.
 ### Maintenance
 
 - **`nmdev doctor`** — check tools, backends, hooks, LaunchAgent, Keychain tokens, Jira and
-  Confluence reach, Firebase login, build lock, pack and config. `--fix` installs the fastlane gem bundle first.
+  Confluence reach (and, with an active epic space, Confluence write scopes probed on its Home), Firebase login, build lock, pack and config. `--fix` installs the fastlane gem bundle first.
 - **`nmdev setup [SECTION]`** — write the config; see [Setup](#setup).
 - `nmdev --license` prints the license.
 
@@ -447,7 +454,7 @@ Fix what fails and re-run. A config error names the file and the offending key.
 |---|---|---|
 | `dev.hersy.nmdev.bitbucket` | `forge.account` | Bitbucket token |
 | `dev.hersy.nmdev.jira` | your Jira email | Jira token; also reads Confluence when it is unscoped |
-| `dev.hersy.nmdev.confluence` | your Jira email | Confluence token (scopes `read:page:confluence`, `read:space:confluence`), needed when the Jira token is scoped: a scoped token covers one app. `setup tracker` asks for it only when the Jira token can't read Confluence |
+| `dev.hersy.nmdev.confluence` | your Jira email | Confluence token (scopes `read:page:confluence`, `read:space:confluence`, `read:confluence-user`; for `wiki` also `write:page:confluence`, `read:attachment:confluence`, `write:attachment:confluence`, `read:content-details:confluence`, `write:content:confluence`, `read:label:confluence`, `write:label:confluence`), needed when the Jira token is scoped: a scoped token covers one app. `setup tracker` asks for it only when the Jira token can't read Confluence |
 | `nmdev-gemini` (`backends.gemini.keychain_item`) | — | Gemini API key, only with the gemini backend |
 
 Rotate a token with `nmdev setup forge` / `nmdev setup tracker` and pick "replace". Inspect with

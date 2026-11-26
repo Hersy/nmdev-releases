@@ -245,6 +245,14 @@ lo que le falta a la otra app, según `sync.modes`.
   carpeta a la que la etiqueta `task_tags` de su resumen lo manda, si no `_shared`. Muestra cada campo
   cambiado y cada archivo creado y nunca commitea (`--json` sugiere el commit); `--dry-run` no escribe
   nada. Sin epic activo no llama a Jira y lo dice.
+- **`nmdev wiki put <FILE> --title <TITLE>`** — escribe un cuerpo en storage format en el
+  `confluence_space` del epic activo: la página con ese título exacto pasa a su versión siguiente; si no
+  existe, se crea bajo `--parent` (por defecto, la Home del espacio). `--parent` sobre una página existente
+  la mueve. `--label L` y `--prop KEY=JSON` se repiten. **`nmdev wiki get <ID>`** imprime el cuerpo en storage
+  (`--json` agrega las propiedades de la página), **`nmdev wiki attach <ID> <FILE>...`** sube archivos (mismo
+  nombre: versión nueva) e imprime el media file id de cada uno, **`nmdev wiki state <ID> <NAME> [--color HEX]`**
+  fija el estado de la página, que Confluence registra como versión nueva. Sale con `2` ante un `--prop`
+  inválido o un epic sin espacio.
 - **`nmdev brief check`** — si la página de Brief del epic activo (`brief_page`) está al día, para el
   hook que exige el brief. Está desactualizada cuando `brief_page` está vacío o la página no existe,
   cuando otra página de `confluence_space` se editó después de la versión actual del Brief, o cuando
@@ -455,7 +463,7 @@ Arreglá lo que falla y volvé a correrlo. Un error de config nombra el archivo 
 |---|---|---|
 | `dev.hersy.nmdev.bitbucket` | `forge.account` | token de Bitbucket |
 | `dev.hersy.nmdev.jira` | tu email de Jira | token de Jira; también lee Confluence si no tiene scopes |
-| `dev.hersy.nmdev.confluence` | tu email de Jira | token de Confluence (scopes `read:page:confluence`, `read:space:confluence`), necesario si el token de Jira tiene scopes: un token con scopes cubre una sola app. `setup tracker` lo pide solo si el token de Jira no puede leer Confluence |
+| `dev.hersy.nmdev.confluence` | tu email de Jira | token de Confluence (scopes `read:page:confluence`, `read:space:confluence`, `read:confluence-user`; para `wiki` también `write:page:confluence`, `read:attachment:confluence`, `write:attachment:confluence`, `read:content-details:confluence`, `write:content:confluence`, `read:label:confluence`, `write:label:confluence`), necesario si el token de Jira tiene scopes: un token con scopes cubre una sola app. `setup tracker` lo pide solo si el token de Jira no puede leer Confluence |
 | `nmdev-gemini` (`backends.gemini.keychain_item`) | — | API key de Gemini, solo con el backend gemini |
 
 Para rotar un token: `nmdev setup forge` / `nmdev setup tracker` y elegí "reemplazar". Para
