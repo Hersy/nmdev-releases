@@ -229,12 +229,18 @@ lo que le falta a la otra app, según `sync.modes`.
   `epics/<slug>.toml` del repo de tickets (claves: `jira_project` obligatoria; `jira_board`,
   `confluence_space`, `home_page`, `brief_page`, `lang`, `status_started`, `status_review`, `branch`), el slug
   activo en `active-epic` al lado; cada cambio se commitea ahí.
+  **`nmdev config set task_types.<Type> <PREFIX>`** fija una fila de `[task_types]` (un prefijo vacío la
+  borra; la primera edición parte de la tabla por defecto). El tipo tiene que ser uno de los tipos de issue
+  de `jira_project`; si no se puede leer Jira la fila se escribe con un aviso. Crear un epic avisa cuando su
+  proyecto no tiene un tipo por defecto, y `doctor` verifica la tabla contra el proyecto.
 - **`nmdev tickets sync [--dry-run]`** — trae el proyecto de Jira del epic activo al repo de tickets
   con una búsqueda JQL paginada. Un archivo cuyo `jira` coincide con un issue solo reescribe `status`,
   `jira_status`, `assignee` y `sprint`, nunca el cuerpo: `status_started` de Jira pasa a `in-progress`,
   `status_review` a `in-review`, cualquier otro status de la categoría done a `done`; cualquier otro
   status deja `status` como está y se escribe tal cual en `jira_status`, que se borra cuando el status
-  vuelve a mapear. Un campo que Jira deja vacío se borra. El sprint es el sprint activo del issue, si no
+  vuelve a mapear. Una spec (`specs/<epic>/<slug>.md`) también espeja su Epic, pero conserva su `status`
+  de triage y su `sprint`: sync solo escribe `jira_status`, siempre con el nombre de Jira, y `assignee`.
+  Un campo que Jira deja vacío se borra. El sprint es el sprint activo del issue, si no
   el último, leído del campo custom de sprint del sitio. Un issue sin archivo se vuelve un stub en la
   carpeta a la que la etiqueta `task_tags` de su resumen lo manda, si no `_shared`. Muestra cada campo
   cambiado y cada archivo creado y nunca commitea (`--json` sugiere el commit); `--dry-run` no escribe
@@ -361,7 +367,7 @@ Overrides por etapa. Etapas: `message`, `assess`, `resolve`, `task_brief`, `task
 Los valores de cada tablero viven solo en el archivo del epic activo, `<tracker.repo>/epics/<slug>.toml`.
 Una config que todavía define `tracker.project_keys`, `started`, `review`, `order` o `task_types` se
 rechaza. Los tipos de issue van en la tabla opcional `[task_types]` del epic (tipo de issue → prefijo de
-branch, por defecto `{ Bug = "fix/", Task = "feat/" }`).
+branch, por defecto `{ Bug = "fix/", Task = "feat/" }`), que se fija con `nmdev config set task_types.<Type> <prefix>`.
 
 ### `[distributor]` (Firebase App Distribution)
 

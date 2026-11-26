@@ -222,11 +222,17 @@ the other app lacks, per `sync.modes`.
   repo's `epics/<slug>.toml` (keys: `jira_project` required; `jira_board`, `confluence_space`,
   `home_page`, `brief_page`, `lang`, `status_started`, `status_review`, `branch`), the active slug in
   `active-epic` beside it; every change is committed there.
+  **`nmdev config set task_types.<Type> <PREFIX>`** sets one row of `[task_types]` (an empty prefix
+  removes it; the first edit starts from the default table). The type must be one of `jira_project`'s
+  issue types; when Jira can't be read the row is written with a warning. Creating an epic warns when
+  its project lacks a default type, and `doctor` checks the table against the project.
 - **`nmdev tickets sync [--dry-run]`** — pulls the active epic's Jira project into the tracker repo
   through a paged JQL search. A file whose `jira` matches an issue gets only `status`, `jira_status`,
   `assignee` and `sprint` rewritten, never its body: Jira's `status_started` maps to `in-progress`,
   `status_review` to `in-review`, any other done-category status to `done`; any other status leaves
   `status` alone and is written verbatim to `jira_status`, which is removed again once the status maps.
+  A spec (`specs/<epic>/<slug>.md`) mirrors its Epic too, but keeps its triage `status` and `sprint`:
+  sync writes only `jira_status`, always Jira's own name, and `assignee`.
   A field Jira leaves empty is removed. Sprint is the issue's active sprint, else its last one, read
   from the site's sprint custom field. An issue with no file becomes a stub in the folder its summary's
   `task_tags` tag routes to, else `_shared`. It prints each changed field and created file and never
@@ -353,7 +359,7 @@ Per-stage overrides. Stages: `message`, `assess`, `resolve`, `task_brief`, `task
 Per-board values live only in the active epic's file, `<tracker.repo>/epics/<slug>.toml`. A config
 that still sets `tracker.project_keys`, `started`, `review`, `order` or `task_types` is refused. Issue
 types go in the epic's optional `[task_types]` table (issue type → branch prefix, default
-`{ Bug = "fix/", Task = "feat/" }`).
+`{ Bug = "fix/", Task = "feat/" }`), set with `nmdev config set task_types.<Type> <prefix>`.
 
 ### `[distributor]` (Firebase App Distribution)
 
